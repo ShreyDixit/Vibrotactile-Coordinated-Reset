@@ -42,6 +42,7 @@
             this.GainValue = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.vCRDuration = new System.Windows.Forms.TextBox();
+            this.JitterCheckBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.GainTrackBar)).BeginInit();
             this.SuspendLayout();
             // 
@@ -197,11 +198,26 @@
             this.vCRDuration.TabIndex = 18;
             this.vCRDuration.Text = "1";
             // 
+            // JitterCheckBox
+            // 
+            this.JitterCheckBox.Appearance = System.Windows.Forms.Appearance.Button;
+            this.JitterCheckBox.AutoSize = true;
+            this.JitterCheckBox.Checked = true;
+            this.JitterCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.JitterCheckBox.Enabled = false;
+            this.JitterCheckBox.Location = new System.Drawing.Point(179, 454);
+            this.JitterCheckBox.Name = "JitterCheckBox";
+            this.JitterCheckBox.Size = new System.Drawing.Size(54, 30);
+            this.JitterCheckBox.TabIndex = 19;
+            this.JitterCheckBox.Text = "Jitter";
+            this.JitterCheckBox.UseVisualStyleBackColor = true;
+            // 
             // DiscoverControllerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(423, 866);
+            this.Controls.Add(this.JitterCheckBox);
             this.Controls.Add(this.vCRDuration);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.GainValue);
@@ -242,6 +258,7 @@
         private System.Windows.Forms.TextBox GainValue;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox vCRDuration;
+        private System.Windows.Forms.CheckBox JitterCheckBox;
     }
 }
 

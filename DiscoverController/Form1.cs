@@ -111,6 +111,7 @@ namespace DiscoverController
 				MirrorHands.Enabled = true;
 				RandomizGain.Enabled = true;
 				vCRDuration.Enabled = true;
+				JitterCheckBox.Enabled = true;
             }
 			else
 			{
@@ -158,6 +159,7 @@ namespace DiscoverController
             MirrorHands.Enabled = false;
             RandomizGain.Enabled = false;
             vCRDuration.Enabled = false;
+			JitterCheckBox.Enabled = false;
             int Total_Simulation_Duration = (int)(decimal.Parse(vCRDuration.Text) * 60 * 1000);
 
             CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, 0, GainTrackBar.Value, 0));
@@ -176,6 +178,7 @@ namespace DiscoverController
             MirrorHands.Enabled = true;
             RandomizGain.Enabled = true;
             vCRDuration.Enabled = true;
+			JitterCheckBox.Enabled = true;
         }
 
 		private async Task startFingerVibrationSimulation(int Total_Simulation_Duration, bool randomizedGain = false, bool rightHand = false, int randomSeed = 42)
@@ -217,7 +220,7 @@ namespace DiscoverController
 					{
 						current_vCR_Burst_Start = next_vCR_Burst_Start;
                         CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingers[finger_idx], vCR_Duration, 0));
-						next_vCR_Burst_Start = rand.Next(-jitter, jitter);
+						next_vCR_Burst_Start = JitterCheckBox.Checked ? rand.Next(-jitter, jitter) : 0;
                         await Task.Delay(vCR_Cycle_Duration_Single_Finger + next_vCR_Burst_Start - current_vCR_Burst_Start);
                     }
                 }
