@@ -162,8 +162,13 @@ namespace DiscoverController
 
             CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, 0, GainTrackBar.Value, 0));
 
-            Task task1 = startFingerVibrationSimulation(Total_Simulation_Duration, RandomizGain.Checked);
-            await Task.WhenAll(task1);
+			Random rand = new Random();
+			int leftHandSeed = rand.Next();
+            int rightHandSeed = MirrorHands.Checked ? leftHandSeed: rand.Next();
+
+            Task task1 = startFingerVibrationSimulation(Total_Simulation_Duration, RandomizGain.Checked, false, leftHandSeed);
+            Task task2 = startFingerVibrationSimulation(Total_Simulation_Duration, RandomizGain.Checked, true, rightHandSeed);
+            await Task.WhenAll(task1, task2);
 
             PulseTactor1Button.Enabled = true;
             SimulationStartButton.Enabled = true;

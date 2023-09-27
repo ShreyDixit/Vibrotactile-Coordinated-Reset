@@ -136,6 +136,8 @@
             // 
             this.MirrorHands.Appearance = System.Windows.Forms.Appearance.Button;
             this.MirrorHands.AutoSize = true;
+            this.MirrorHands.Checked = true;
+            this.MirrorHands.CheckState = System.Windows.Forms.CheckState.Checked;
             this.MirrorHands.Enabled = false;
             this.MirrorHands.Location = new System.Drawing.Point(20, 454);
             this.MirrorHands.MaximumSize = new System.Drawing.Size(455, 455);
