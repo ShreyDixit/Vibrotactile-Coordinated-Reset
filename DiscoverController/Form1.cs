@@ -201,14 +201,6 @@ namespace DiscoverController
             Random randLeft = new Random(leftHandSeed);
             Random randRight = new Random(rightHandSeed);
             // Each finger of the hand will get a random gain value
-            if (randomizedGain)
-            {
-                for (int i = 0; i < fingersLeft.Length; i++)
-                {
-                    CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersLeft[i], randLeft.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
-                    CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersRight[i], randRight.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
-                }
-            }
 
             int left_vCR_Burst_Start = 0, right_vCR_Burst_Start = 0;
 
@@ -221,10 +213,18 @@ namespace DiscoverController
 
                     for (int finger_idx = 0; finger_idx < num_fingers; finger_idx++)
                     {
-                        CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersLeft[finger_idx], vCR_Duration, left_vCR_Burst_Start));
-                        CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersRight[finger_idx], vCR_Duration, right_vCR_Burst_Start));
+                        Parallel.Invoke(
+                            () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersLeft[finger_idx], vCR_Duration, left_vCR_Burst_Start)),
+                            () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersRight[finger_idx], vCR_Duration, right_vCR_Burst_Start))
+                            );
                         left_vCR_Burst_Start = JitterCheckBox.Checked ? randLeft.Next(0, 2 * jitter) : jitter;
                         right_vCR_Burst_Start = JitterCheckBox.Checked ? randRight.Next(0, 2 * jitter) : jitter;
+
+                        if (randomizedGain)
+                        {
+                            CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersLeft[finger_idx], randLeft.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
+                            CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersRight[finger_idx], randRight.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
+                        }
 
                         if (vCR_Cycle == 0 && finger_idx == 0)
                             await Task.Delay(vCR_Cycle_Duration_Single_Finger - jitter);
