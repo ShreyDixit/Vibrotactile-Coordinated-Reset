@@ -30,6 +30,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Reflection;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 //-------------------------------------------------------------------------//
 //TDK Windows C# Discover Controller Tutorial
@@ -153,10 +154,10 @@ namespace DiscoverController
             Random rand = new Random();
             int leftHandSeed = rand.Next();
             int rightHandSeed = MirrorHands.Checked ? leftHandSeed : rand.Next(); //Same seed is used for mirrored hands
+            
 
-            Task task1 = startFingerVibrationSimulation(Total_Simulation_Duration, RandomizGain.Checked, false, leftHandSeed);
-            Task task2 = startFingerVibrationSimulation(Total_Simulation_Duration, RandomizGain.Checked, true, rightHandSeed);
-            await Task.WhenAll(task1, task2);
+            Task task = startFingerVibrationSimulation(Total_Simulation_Duration, RandomizGain.Checked, leftHandSeed, rightHandSeed);
+            await Task.WhenAll(task);
 
             SimulationStartButton.Enabled = true;
             GainTrackBar.Enabled = true;
@@ -179,7 +180,7 @@ namespace DiscoverController
             GainMin.Enabled = false;
         }
 
-        private async Task startFingerVibrationSimulation(int Total_Simulation_Duration, bool randomizedGain = false, bool rightHand = false, int randomSeed = 42)
+        private async Task startFingerVibrationSimulation(int Total_Simulation_Duration, bool randomizedGain = false, int leftHandSeed = 42, int rightHandSeed = 42)
         {
             //vCR Simulation Parameters
             const int vCR_Cycle_Duration = 667; // ms
@@ -192,37 +193,43 @@ namespace DiscoverController
             int Number_of_vCR_Cycles = Total_Simulation_Duration / vCR_Cycle_Duration;
 
             // Setting what tactors to use on the basis of the hand
-            int[] fingers = { 1, 2, 3, 4 };
-            if (rightHand)
-            {
-                for (int i = 0; i < num_fingers; i++)
-                    fingers[i] = 9 - fingers[i];
-            }
+            int[] fingersLeft = { 1, 2, 3, 4 };
+            int[] fingersRight = {8, 7, 6, 5};
 
             CheckTDKErrors(Tdk.TdkInterface.ChangeFreq(ConnectedBoardID, 0, vCR_Frequency, 0)); // setting the frequency
 
-            Random rand = new Random(randomSeed);
-
+            Random randLeft = new Random(leftHandSeed);
+            Random randRight = new Random(rightHandSeed);
             // Each finger of the hand will get a random gain value
-            if (randomizedGain)
-                foreach (int finger in fingers)
-                    CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, finger, rand.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
 
-            int current_vCR_Burst_Start = 0;
-            int next_vCR_Burst_Start = 0;
+            int left_vCR_Burst_Start = 0, right_vCR_Burst_Start = 0;
 
             for (int vCR_Cycle = 0; vCR_Cycle < Number_of_vCR_Cycles; vCR_Cycle++)
             {
                 if (vCR_Cycle % 5 < 3)
                 {
-                    fingers = fingers.OrderBy(x => rand.Next()).ToArray(); //shuffling the order of the fingers to stimulate
+                    fingersLeft = fingersLeft.OrderBy(x => randLeft.Next()).ToArray(); //shuffling the order of the fingers to stimulate
+                    fingersRight = fingersRight.OrderBy(x => randRight.Next()).ToArray(); //shuffling the order of the fingers to stimulate
 
                     for (int finger_idx = 0; finger_idx < num_fingers; finger_idx++)
                     {
-                        current_vCR_Burst_Start = next_vCR_Burst_Start;
-                        CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingers[finger_idx], vCR_Duration, 0));
-                        next_vCR_Burst_Start = JitterCheckBox.Checked ? rand.Next(-jitter, jitter) : 0;
-                        await Task.Delay(vCR_Cycle_Duration_Single_Finger + next_vCR_Burst_Start - current_vCR_Burst_Start);
+                        Parallel.Invoke(
+                            () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersLeft[finger_idx], vCR_Duration, left_vCR_Burst_Start)),
+                            () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersRight[finger_idx], vCR_Duration, right_vCR_Burst_Start))
+                            );
+                        left_vCR_Burst_Start = JitterCheckBox.Checked ? randLeft.Next(0, 2 * jitter) : jitter;
+                        right_vCR_Burst_Start = JitterCheckBox.Checked ? randRight.Next(0, 2 * jitter) : jitter;
+
+                        if (randomizedGain)
+                        {
+                            CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersLeft[finger_idx], randLeft.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
+                            CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersRight[finger_idx], randRight.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
+                        }
+
+                        if (vCR_Cycle == 0 && finger_idx == 0)
+                            await Task.Delay(vCR_Cycle_Duration_Single_Finger - jitter);
+                        else
+                            await Task.Delay(vCR_Cycle_Duration_Single_Finger);
                     }
                 }
                 else
