@@ -200,9 +200,10 @@ namespace DiscoverController
 
             Random randLeft = new Random(leftHandSeed);
             Random randRight = new Random(rightHandSeed);
+            Random randomJitter = new Random();
             // Each finger of the hand will get a random gain value
 
-            int left_vCR_Burst_Start = 0, right_vCR_Burst_Start = 0;
+            int vCR_Burst_Start = 0;
 
             for (int vCR_Cycle = 0; vCR_Cycle < Number_of_vCR_Cycles; vCR_Cycle++)
             {
@@ -214,11 +215,10 @@ namespace DiscoverController
                     for (int finger_idx = 0; finger_idx < num_fingers; finger_idx++)
                     {
                         Parallel.Invoke(
-                            () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersLeft[finger_idx], vCR_Duration, left_vCR_Burst_Start)),
-                            () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersRight[finger_idx], vCR_Duration, right_vCR_Burst_Start))
+                            () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersLeft[finger_idx], vCR_Duration, vCR_Burst_Start)),
+                            () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersRight[finger_idx], vCR_Duration, vCR_Burst_Start))
                             );
-                        left_vCR_Burst_Start = JitterCheckBox.Checked ? randLeft.Next(0, 2 * jitter) : jitter;
-                        right_vCR_Burst_Start = JitterCheckBox.Checked ? randRight.Next(0, 2 * jitter) : jitter;
+                        vCR_Burst_Start = JitterCheckBox.Checked ? randomJitter.Next(0, 2 * jitter) : jitter;
 
                         if (randomizedGain)
                         {
