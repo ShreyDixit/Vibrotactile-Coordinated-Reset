@@ -44,6 +44,8 @@
             this.JitterCheckBox = new System.Windows.Forms.CheckBox();
             this.GainMin = new System.Windows.Forms.TextBox();
             this.GainMax = new System.Windows.Forms.TextBox();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.timeLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.GainTrackBar)).BeginInit();
             this.SuspendLayout();
             // 
@@ -91,7 +93,7 @@
             // 
             // ConsoleOutputRichTextBox
             // 
-            this.ConsoleOutputRichTextBox.Location = new System.Drawing.Point(22, 651);
+            this.ConsoleOutputRichTextBox.Location = new System.Drawing.Point(20, 712);
             this.ConsoleOutputRichTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.ConsoleOutputRichTextBox.Name = "ConsoleOutputRichTextBox";
             this.ConsoleOutputRichTextBox.ReadOnly = true;
@@ -219,11 +221,31 @@
             this.GainMax.TabIndex = 21;
             this.GainMax.Text = "255";
             // 
+            // progressBar
+            // 
+            this.progressBar.AccessibleName = "progressBar";
+            this.progressBar.Location = new System.Drawing.Point(22, 633);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(384, 23);
+            this.progressBar.TabIndex = 22;
+            // 
+            // timeLabel
+            // 
+            this.timeLabel.AccessibleName = "timeLabel";
+            this.timeLabel.AutoSize = true;
+            this.timeLabel.Location = new System.Drawing.Point(154, 675);
+            this.timeLabel.Name = "timeLabel";
+            this.timeLabel.Size = new System.Drawing.Size(130, 20);
+            this.timeLabel.TabIndex = 23;
+            this.timeLabel.Text = "Elapsed Time: 0s";
+            // 
             // DiscoverControllerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(423, 866);
+            this.ClientSize = new System.Drawing.Size(423, 896);
+            this.Controls.Add(this.timeLabel);
+            this.Controls.Add(this.progressBar);
             this.Controls.Add(this.GainMax);
             this.Controls.Add(this.GainMin);
             this.Controls.Add(this.JitterCheckBox);
@@ -267,6 +289,8 @@
         private System.Windows.Forms.CheckBox JitterCheckBox;
         private System.Windows.Forms.TextBox GainMin;
         private System.Windows.Forms.TextBox GainMax;
+        private System.Windows.Forms.ProgressBar progressBar;
+        private System.Windows.Forms.Label timeLabel;
     }
 }
 
