@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Reflection;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
+using System.Threading;
 
 //-------------------------------------------------------------------------//
 //TDK Windows C# Discover Controller Tutorial
@@ -48,6 +49,7 @@ namespace DiscoverController
     public partial class DiscoverControllerForm : Form
     {
         private int ConnectedBoardID = -1;
+        private CancellationTokenSource cancellationTokenSource;
 
         public DiscoverControllerForm()
         {
@@ -154,23 +156,31 @@ namespace DiscoverController
             Random rand = new Random();
             int leftHandSeed = rand.Next();
             int rightHandSeed = MirrorHands.Checked ? leftHandSeed : rand.Next(); //Same seed is used for mirrored hands
-            
 
-            Task task = startFingerVibrationSimulation(Total_Simulation_Duration, RandomizGain.Checked, leftHandSeed, rightHandSeed);
+            cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = cancellationTokenSource.Token;
+            Task task = startFingerVibrationSimulation(Total_Simulation_Duration, cancellationToken, RandomizGain.Checked, leftHandSeed, rightHandSeed);
             await Task.WhenAll(task);
 
+            enableAllInputs();
+            ToggleGainInputs();
+        }
+
+        private void enableAllInputs()
+        {
             SimulationStartButton.Enabled = true;
+            stopButton.Enabled = false;
             GainTrackBar.Enabled = true;
             MirrorHands.Enabled = true;
             RandomizGain.Enabled = true;
             vCRDuration.Enabled = true;
             JitterCheckBox.Enabled = true;
-            ToggleGainInputs();
         }
 
         private void disableAllInputs()
         {
             SimulationStartButton.Enabled = false;
+            stopButton.Enabled = true;
             GainTrackBar.Enabled = false;
             MirrorHands.Enabled = false;
             RandomizGain.Enabled = false;
@@ -180,7 +190,7 @@ namespace DiscoverController
             GainMin.Enabled = false;
         }
 
-        private async Task startFingerVibrationSimulation(int Total_Simulation_Duration, bool randomizedGain = false, int leftHandSeed = 42, int rightHandSeed = 42)
+        private async Task startFingerVibrationSimulation(int Total_Simulation_Duration, CancellationToken cancellationToken, bool randomizedGain = false, int leftHandSeed = 42, int rightHandSeed = 42)
         {
             //vCR Simulation Parameters
             const int vCR_Cycle_Duration = 667; // ms
@@ -191,6 +201,24 @@ namespace DiscoverController
             const int inter_stimulus_interval = vCR_Cycle_Duration_Single_Finger - vCR_Duration;
             const int jitter = (int)(inter_stimulus_interval * 0.235);
             int Number_of_vCR_Cycles = Total_Simulation_Duration / vCR_Cycle_Duration;
+
+            progressBar.Maximum = Number_of_vCR_Cycles;
+            progressBar.Value = 0;
+
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            timer.Interval = 1000; // 1000 ms = 1 second
+            int elapsedTime = 0; // This will store the elapsed time in seconds
+
+            timer.Tick += (sender, e) =>
+            {
+                elapsedTime++;
+
+                int hours = elapsedTime / 3600;
+                int minutes = (elapsedTime % 3600) / 60;
+                int seconds = elapsedTime % 60;
+
+                timeLabel.Text = $"Elapsed Time: {hours:D2}h {minutes:D2}m {seconds:D2}s";
+            };
 
             // Setting what tactors to use on the basis of the hand
             int[] fingersLeft = { 1, 2, 3, 4 };
@@ -204,9 +232,16 @@ namespace DiscoverController
             // Each finger of the hand will get a random gain value
 
             int vCR_Burst_Start = 0;
+            timer.Start();
 
             for (int vCR_Cycle = 0; vCR_Cycle < Number_of_vCR_Cycles; vCR_Cycle++)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    // Handle the cancellation request here (e.g., clean up resources)
+                    break;
+                }
+
                 if (vCR_Cycle % 5 < 3)
                 {
                     fingersLeft = fingersLeft.OrderBy(x => randLeft.Next()).ToArray(); //shuffling the order of the fingers to stimulate
@@ -215,15 +250,15 @@ namespace DiscoverController
                     for (int finger_idx = 0; finger_idx < num_fingers; finger_idx++)
                     {
                         Parallel.Invoke(
-                            () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersLeft[finger_idx], vCR_Duration, vCR_Burst_Start)),
-                            () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersRight[finger_idx], vCR_Duration, vCR_Burst_Start))
-                            );
+                           () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersLeft[finger_idx], vCR_Duration, vCR_Burst_Start)),
+                           () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersRight[finger_idx], vCR_Duration, vCR_Burst_Start))
+                           );
                         vCR_Burst_Start = JitterCheckBox.Checked ? randomJitter.Next(0, 2 * jitter) : jitter;
 
                         if (randomizedGain)
                         {
-                            CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersLeft[finger_idx], randLeft.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
-                            CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersRight[finger_idx], randRight.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
+                           CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersLeft[finger_idx], randLeft.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
+                           CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersRight[finger_idx], randRight.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
                         }
 
                         if (vCR_Cycle == 0 && finger_idx == 0)
@@ -236,7 +271,9 @@ namespace DiscoverController
                 {
                     await Task.Delay(vCR_Cycle_Duration);
                 }
+                progressBar.Value = vCR_Cycle + 1;
             }
+            timer.Stop();
         }
 
         private void GainTrackBar_Scroll(object sender, EventArgs e)
@@ -263,6 +300,15 @@ namespace DiscoverController
                 GainMax.Enabled = false;
                 GainMin.Enabled = false;
             }
+        }
+
+        private void stopButton_Click(object sender, EventArgs e)
+        {
+            if (cancellationTokenSource != null)
+            {
+                cancellationTokenSource.Cancel();
+            }
+
         }
     }
 }
