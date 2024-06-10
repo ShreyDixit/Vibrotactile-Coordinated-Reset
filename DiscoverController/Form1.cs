@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Reflection;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
+using System.Threading;
 
 //-------------------------------------------------------------------------//
 //TDK Windows C# Discover Controller Tutorial
@@ -48,6 +49,7 @@ namespace DiscoverController
     public partial class DiscoverControllerForm : Form
     {
         private int ConnectedBoardID = -1;
+        private CancellationTokenSource cancellationTokenSource;
 
         public DiscoverControllerForm()
         {
@@ -155,8 +157,9 @@ namespace DiscoverController
             int leftHandSeed = rand.Next();
             int rightHandSeed = MirrorHands.Checked ? leftHandSeed : rand.Next(); //Same seed is used for mirrored hands
 
-
-            Task task = startFingerVibrationSimulation(Total_Simulation_Duration, RandomizGain.Checked, leftHandSeed, rightHandSeed);
+            cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = cancellationTokenSource.Token;
+            Task task = startFingerVibrationSimulation(Total_Simulation_Duration, cancellationToken, RandomizGain.Checked, leftHandSeed, rightHandSeed);
             await Task.WhenAll(task);
 
             enableAllInputs();
@@ -166,6 +169,7 @@ namespace DiscoverController
         private void enableAllInputs()
         {
             SimulationStartButton.Enabled = true;
+            stopButton.Enabled = false;
             GainTrackBar.Enabled = true;
             MirrorHands.Enabled = true;
             RandomizGain.Enabled = true;
@@ -176,6 +180,7 @@ namespace DiscoverController
         private void disableAllInputs()
         {
             SimulationStartButton.Enabled = false;
+            stopButton.Enabled = true;
             GainTrackBar.Enabled = false;
             MirrorHands.Enabled = false;
             RandomizGain.Enabled = false;
@@ -185,7 +190,7 @@ namespace DiscoverController
             GainMin.Enabled = false;
         }
 
-        private async Task startFingerVibrationSimulation(int Total_Simulation_Duration, bool randomizedGain = false, int leftHandSeed = 42, int rightHandSeed = 42)
+        private async Task startFingerVibrationSimulation(int Total_Simulation_Duration, CancellationToken cancellationToken, bool randomizedGain = false, int leftHandSeed = 42, int rightHandSeed = 42)
         {
             //vCR Simulation Parameters
             const int vCR_Cycle_Duration = 667; // ms
@@ -200,7 +205,7 @@ namespace DiscoverController
             progressBar.Maximum = Number_of_vCR_Cycles;
             progressBar.Value = 0;
 
-            Timer timer = new System.Windows.Forms.Timer();
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
             timer.Interval = 1000; // 1000 ms = 1 second
             int elapsedTime = 0; // This will store the elapsed time in seconds
 
@@ -231,6 +236,12 @@ namespace DiscoverController
 
             for (int vCR_Cycle = 0; vCR_Cycle < Number_of_vCR_Cycles; vCR_Cycle++)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    // Handle the cancellation request here (e.g., clean up resources)
+                    break;
+                }
+
                 if (vCR_Cycle % 5 < 3)
                 {
                     fingersLeft = fingersLeft.OrderBy(x => randLeft.Next()).ToArray(); //shuffling the order of the fingers to stimulate
@@ -289,6 +300,15 @@ namespace DiscoverController
                 GainMax.Enabled = false;
                 GainMin.Enabled = false;
             }
+        }
+
+        private void stopButton_Click(object sender, EventArgs e)
+        {
+            if (cancellationTokenSource != null)
+            {
+                cancellationTokenSource.Cancel();
+            }
+
         }
     }
 }

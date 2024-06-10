@@ -46,6 +46,7 @@
             this.GainMax = new System.Windows.Forms.TextBox();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.timeLabel = new System.Windows.Forms.Label();
+            this.stopButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.GainTrackBar)).BeginInit();
             this.SuspendLayout();
             // 
@@ -93,11 +94,11 @@
             // 
             // ConsoleOutputRichTextBox
             // 
-            this.ConsoleOutputRichTextBox.Location = new System.Drawing.Point(20, 712);
+            this.ConsoleOutputRichTextBox.Location = new System.Drawing.Point(20, 795);
             this.ConsoleOutputRichTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.ConsoleOutputRichTextBox.Name = "ConsoleOutputRichTextBox";
             this.ConsoleOutputRichTextBox.ReadOnly = true;
-            this.ConsoleOutputRichTextBox.Size = new System.Drawing.Size(386, 182);
+            this.ConsoleOutputRichTextBox.Size = new System.Drawing.Size(386, 96);
             this.ConsoleOutputRichTextBox.TabIndex = 10;
             this.ConsoleOutputRichTextBox.Text = "";
             // 
@@ -115,7 +116,7 @@
             // GainTrackBar
             // 
             this.GainTrackBar.Enabled = false;
-            this.GainTrackBar.Location = new System.Drawing.Point(20, 450);
+            this.GainTrackBar.Location = new System.Drawing.Point(20, 535);
             this.GainTrackBar.Maximum = 255;
             this.GainTrackBar.Minimum = 1;
             this.GainTrackBar.Name = "GainTrackBar";
@@ -131,7 +132,7 @@
             this.MirrorHands.Checked = true;
             this.MirrorHands.CheckState = System.Windows.Forms.CheckState.Checked;
             this.MirrorHands.Enabled = false;
-            this.MirrorHands.Location = new System.Drawing.Point(20, 381);
+            this.MirrorHands.Location = new System.Drawing.Point(20, 466);
             this.MirrorHands.MaximumSize = new System.Drawing.Size(455, 455);
             this.MirrorHands.Name = "MirrorHands";
             this.MirrorHands.Size = new System.Drawing.Size(110, 30);
@@ -144,7 +145,7 @@
             this.RandomizGain.Appearance = System.Windows.Forms.Appearance.Button;
             this.RandomizGain.AutoSize = true;
             this.RandomizGain.Enabled = false;
-            this.RandomizGain.Location = new System.Drawing.Point(146, 586);
+            this.RandomizGain.Location = new System.Drawing.Point(146, 671);
             this.RandomizGain.Name = "RandomizGain";
             this.RandomizGain.Size = new System.Drawing.Size(138, 30);
             this.RandomizGain.TabIndex = 14;
@@ -155,7 +156,7 @@
             // GainValueLabel
             // 
             this.GainValueLabel.AutoSize = true;
-            this.GainValueLabel.Location = new System.Drawing.Point(70, 522);
+            this.GainValueLabel.Location = new System.Drawing.Point(70, 607);
             this.GainValueLabel.Name = "GainValueLabel";
             this.GainValueLabel.Size = new System.Drawing.Size(88, 20);
             this.GainValueLabel.TabIndex = 15;
@@ -164,7 +165,7 @@
             // GainValue
             // 
             this.GainValue.Enabled = false;
-            this.GainValue.Location = new System.Drawing.Point(205, 519);
+            this.GainValue.Location = new System.Drawing.Point(205, 604);
             this.GainValue.Name = "GainValue";
             this.GainValue.ReadOnly = true;
             this.GainValue.Size = new System.Drawing.Size(181, 26);
@@ -196,7 +197,7 @@
             this.JitterCheckBox.Checked = true;
             this.JitterCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.JitterCheckBox.Enabled = false;
-            this.JitterCheckBox.Location = new System.Drawing.Point(352, 381);
+            this.JitterCheckBox.Location = new System.Drawing.Point(352, 466);
             this.JitterCheckBox.Name = "JitterCheckBox";
             this.JitterCheckBox.Size = new System.Drawing.Size(54, 30);
             this.JitterCheckBox.TabIndex = 19;
@@ -206,7 +207,7 @@
             // GainMin
             // 
             this.GainMin.Enabled = false;
-            this.GainMin.Location = new System.Drawing.Point(20, 588);
+            this.GainMin.Location = new System.Drawing.Point(20, 673);
             this.GainMin.Name = "GainMin";
             this.GainMin.Size = new System.Drawing.Size(100, 26);
             this.GainMin.TabIndex = 20;
@@ -215,7 +216,7 @@
             // GainMax
             // 
             this.GainMax.Enabled = false;
-            this.GainMax.Location = new System.Drawing.Point(308, 588);
+            this.GainMax.Location = new System.Drawing.Point(308, 673);
             this.GainMax.Name = "GainMax";
             this.GainMax.Size = new System.Drawing.Size(100, 26);
             this.GainMax.TabIndex = 21;
@@ -224,7 +225,7 @@
             // progressBar
             // 
             this.progressBar.AccessibleName = "progressBar";
-            this.progressBar.Location = new System.Drawing.Point(22, 633);
+            this.progressBar.Location = new System.Drawing.Point(22, 718);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(384, 23);
             this.progressBar.TabIndex = 22;
@@ -233,17 +234,30 @@
             // 
             this.timeLabel.AccessibleName = "timeLabel";
             this.timeLabel.AutoSize = true;
-            this.timeLabel.Location = new System.Drawing.Point(154, 675);
+            this.timeLabel.Location = new System.Drawing.Point(154, 760);
             this.timeLabel.Name = "timeLabel";
             this.timeLabel.Size = new System.Drawing.Size(130, 20);
             this.timeLabel.TabIndex = 23;
             this.timeLabel.Text = "Elapsed Time: 0s";
+            // 
+            // stopButton
+            // 
+            this.stopButton.AccessibleName = "StopButton";
+            this.stopButton.Enabled = false;
+            this.stopButton.Location = new System.Drawing.Point(22, 373);
+            this.stopButton.Name = "stopButton";
+            this.stopButton.Size = new System.Drawing.Size(386, 67);
+            this.stopButton.TabIndex = 24;
+            this.stopButton.Text = "Stop";
+            this.stopButton.UseVisualStyleBackColor = true;
+            this.stopButton.Click += new System.EventHandler(this.stopButton_Click);
             // 
             // DiscoverControllerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(423, 896);
+            this.Controls.Add(this.stopButton);
             this.Controls.Add(this.timeLabel);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.GainMax);
@@ -291,6 +305,7 @@
         private System.Windows.Forms.TextBox GainMax;
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.Label timeLabel;
+        private System.Windows.Forms.Button stopButton;
     }
 }
 
