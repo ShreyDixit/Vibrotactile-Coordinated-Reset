@@ -125,6 +125,7 @@ namespace DiscoverController
                 GainTrackBar.Enabled = true;
                 RandomizGain.Enabled = true;
                 vCRDuration.Enabled = true;
+                simProtocols.Enabled = true;
             }
             else
             {
@@ -202,6 +203,7 @@ namespace DiscoverController
             GainTrackBar.Enabled = true;
             RandomizGain.Enabled = true;
             vCRDuration.Enabled = true;
+            simProtocols.Enabled = true;
         }
 
         private void disableAllInputs()
@@ -213,6 +215,7 @@ namespace DiscoverController
             vCRDuration.Enabled = false;
             GainMax.Enabled = false;
             GainMin.Enabled = false;
+            simProtocols.Enabled = false;
         }
 
         private async Task startFingerVibrationSimulationSHAM(int Number_of_vCR_Cycles, CancellationToken cancellationToken)

@@ -234,6 +234,7 @@
             // 
             // simProtocols
             // 
+            this.simProtocols.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.simProtocols.FormattingEnabled = true;
             this.simProtocols.Items.AddRange(new object[] {
             "A",
@@ -246,7 +247,7 @@
             this.simProtocols.Name = "simProtocols";
             this.simProtocols.Size = new System.Drawing.Size(138, 28);
             this.simProtocols.TabIndex = 26;
-            this.simProtocols.Text = "A";
+            this.simProtocols.Enabled = false;
             this.simProtocols.SelectedIndexChanged += new System.EventHandler(this.simProtocols_SelectedIndexChanged);
             // 
             // DiscoverControllerForm
