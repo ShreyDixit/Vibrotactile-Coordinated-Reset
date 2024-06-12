@@ -50,6 +50,19 @@ namespace DiscoverController
     {
         private int ConnectedBoardID = -1;
         private CancellationTokenSource cancellationTokenSource;
+        private bool mirroredHands;
+        private bool jitterOn;
+        //vCR Simulation Parameters
+        private const int vCR_Cycle_Duration = 667; // ms
+        private const int vCR_Duration = 100; // ms
+        private const int vCR_Frequency = 2500; // Hz
+        private const int num_fingers = 4;
+        private const int vCR_Cycle_Duration_Single_Finger = vCR_Cycle_Duration / num_fingers;
+        private const int inter_stimulus_interval = vCR_Cycle_Duration_Single_Finger - vCR_Duration;
+        private const int jitter = (int)(inter_stimulus_interval * 0.235);
+        // Setting what tactors to use on the basis of the hand
+        private int[] fingersLeft = { 1, 2, 3, 4 };
+        private int[] fingersRight = { 8, 7, 6, 5 };
 
         public DiscoverControllerForm()
         {
@@ -110,10 +123,8 @@ namespace DiscoverController
                 ConnectButton.Enabled = false;
                 SimulationStartButton.Enabled = true;
                 GainTrackBar.Enabled = true;
-                MirrorHands.Enabled = true;
                 RandomizGain.Enabled = true;
                 vCRDuration.Enabled = true;
-                JitterCheckBox.Enabled = true;
             }
             else
             {
@@ -150,16 +161,21 @@ namespace DiscoverController
             disableAllInputs();
 
             int Total_Simulation_Duration = (int)(decimal.Parse(vCRDuration.Text) * 60 * 1000); // converts min to ms
+            int Number_of_vCR_Cycles = Total_Simulation_Duration / vCR_Cycle_Duration;
 
             CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, 0, GainTrackBar.Value, 0));
 
             Random rand = new Random();
             int leftHandSeed = rand.Next();
-            int rightHandSeed = MirrorHands.Checked ? leftHandSeed : rand.Next(); //Same seed is used for mirrored hands
+            int rightHandSeed = this.mirroredHands ? leftHandSeed : rand.Next(); //Same seed is used for mirrored hands
 
             cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
-            Task task = startFingerVibrationSimulation(Total_Simulation_Duration, cancellationToken, RandomizGain.Checked, leftHandSeed, rightHandSeed);
+
+            progressBar.Maximum = Number_of_vCR_Cycles;
+            progressBar.Value = 0;
+
+            Task task = startFingerVibrationSimulation(Number_of_vCR_Cycles, cancellationToken, RandomizGain.Checked);
             await Task.WhenAll(task);
 
             enableAllInputs();
@@ -171,10 +187,8 @@ namespace DiscoverController
             SimulationStartButton.Enabled = true;
             stopButton.Enabled = false;
             GainTrackBar.Enabled = true;
-            MirrorHands.Enabled = true;
             RandomizGain.Enabled = true;
             vCRDuration.Enabled = true;
-            JitterCheckBox.Enabled = true;
         }
 
         private void disableAllInputs()
@@ -182,49 +196,21 @@ namespace DiscoverController
             SimulationStartButton.Enabled = false;
             stopButton.Enabled = true;
             GainTrackBar.Enabled = false;
-            MirrorHands.Enabled = false;
             RandomizGain.Enabled = false;
             vCRDuration.Enabled = false;
-            JitterCheckBox.Enabled = false;
             GainMax.Enabled = false;
             GainMin.Enabled = false;
         }
 
-        private async Task startFingerVibrationSimulation(int Total_Simulation_Duration, CancellationToken cancellationToken, bool randomizedGain = false, int leftHandSeed = 42, int rightHandSeed = 42)
+        private async Task startFingerVibrationSimulation(int Number_of_vCR_Cycles, CancellationToken cancellationToken, bool randomizedGain = false)
         {
-            //vCR Simulation Parameters
-            const int vCR_Cycle_Duration = 667; // ms
-            const int vCR_Duration = 100; // ms
-            const int vCR_Frequency = 2500; // Hz
-            const int num_fingers = 4;
-            const int vCR_Cycle_Duration_Single_Finger = vCR_Cycle_Duration / num_fingers;
-            const int inter_stimulus_interval = vCR_Cycle_Duration_Single_Finger - vCR_Duration;
-            const int jitter = (int)(inter_stimulus_interval * 0.235);
-            int Number_of_vCR_Cycles = Total_Simulation_Duration / vCR_Cycle_Duration;
-
-            progressBar.Maximum = Number_of_vCR_Cycles;
-            progressBar.Value = 0;
-
-            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-            timer.Interval = 1000; // 1000 ms = 1 second
-            int elapsedTime = 0; // This will store the elapsed time in seconds
-
-            timer.Tick += (sender, e) =>
-            {
-                elapsedTime++;
-
-                int hours = elapsedTime / 3600;
-                int minutes = (elapsedTime % 3600) / 60;
-                int seconds = elapsedTime % 60;
-
-                timeLabel.Text = $"Elapsed Time: {hours:D2}h {minutes:D2}m {seconds:D2}s";
-            };
-
-            // Setting what tactors to use on the basis of the hand
-            int[] fingersLeft = { 1, 2, 3, 4 };
-            int[] fingersRight = {8, 7, 6, 5};
+            System.Windows.Forms.Timer timer = getTimer();
 
             CheckTDKErrors(Tdk.TdkInterface.ChangeFreq(ConnectedBoardID, 0, vCR_Frequency, 0)); // setting the frequency
+
+            Random randHands = new Random();
+            int leftHandSeed = randHands.Next();
+            int rightHandSeed = this.mirroredHands ? leftHandSeed : randHands.Next(); //Same seed is used for mirrored hands
 
             Random randLeft = new Random(leftHandSeed);
             Random randRight = new Random(rightHandSeed);
@@ -244,21 +230,21 @@ namespace DiscoverController
 
                 if (vCR_Cycle % 5 < 3)
                 {
-                    fingersLeft = fingersLeft.OrderBy(x => randLeft.Next()).ToArray(); //shuffling the order of the fingers to stimulate
-                    fingersRight = fingersRight.OrderBy(x => randRight.Next()).ToArray(); //shuffling the order of the fingers to stimulate
+                    int []fingersLeftThisCycle = fingersLeft.OrderBy(x => randLeft.Next()).ToArray(); //shuffling the order of the fingers to stimulate
+                    int[] fingersRightThisCycle = fingersRight.OrderBy(x => randRight.Next()).ToArray(); //shuffling the order of the fingers to stimulate
 
                     for (int finger_idx = 0; finger_idx < num_fingers; finger_idx++)
                     {
                         Parallel.Invoke(
-                           () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersLeft[finger_idx], vCR_Duration, vCR_Burst_Start)),
-                           () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersRight[finger_idx], vCR_Duration, vCR_Burst_Start))
+                           () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersLeftThisCycle[finger_idx], vCR_Duration, vCR_Burst_Start)),
+                           () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, fingersRightThisCycle[finger_idx], vCR_Duration, vCR_Burst_Start))
                            );
-                        vCR_Burst_Start = JitterCheckBox.Checked ? randomJitter.Next(0, 2 * jitter) : jitter;
+                        vCR_Burst_Start = jitterOn ? randomJitter.Next(0, 2 * jitter) : jitter;
 
                         if (randomizedGain)
                         {
-                           CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersLeft[finger_idx], randLeft.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
-                           CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersRight[finger_idx], randRight.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
+                            CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersLeftThisCycle[finger_idx], randLeft.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
+                            CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, fingersRightThisCycle[finger_idx], randRight.Next(Int32.Parse(GainMin.Text), Int32.Parse(GainMax.Text)), 0));
                         }
 
                         if (vCR_Cycle == 0 && finger_idx == 0)
@@ -274,6 +260,25 @@ namespace DiscoverController
                 progressBar.Value = vCR_Cycle + 1;
             }
             timer.Stop();
+        }
+
+        private System.Windows.Forms.Timer getTimer()
+        {
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            timer.Interval = 1000; // 1000 ms = 1 second
+            int elapsedTime = 0; // This will store the elapsed time in seconds
+
+            timer.Tick += (sender, e) =>
+            {
+                elapsedTime++;
+
+                int hours = elapsedTime / 3600;
+                int minutes = (elapsedTime % 3600) / 60;
+                int seconds = elapsedTime % 60;
+
+                timeLabel.Text = $"Elapsed Time: {hours:D2}h {minutes:D2}m {seconds:D2}s";
+            };
+            return timer;
         }
 
         private void GainTrackBar_Scroll(object sender, EventArgs e)
@@ -309,6 +314,30 @@ namespace DiscoverController
                 cancellationTokenSource.Cancel();
             }
 
+        }
+
+        private void simProtocols_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string selectedSimProtocol = simProtocols.SelectedItem.ToString();
+            switch (selectedSimProtocol)
+            {
+                case "A":
+                    mirroredHands = true;
+                    jitterOn = true;
+                    break;
+                case "B":
+                    mirroredHands = false;
+                    jitterOn = true;
+                    break;
+                case "C":
+                    mirroredHands = true;
+                    jitterOn = false;
+                    break;
+                case "D":
+                    mirroredHands = false;
+                    jitterOn = false;
+                break;
+            }
         }
     }
 }

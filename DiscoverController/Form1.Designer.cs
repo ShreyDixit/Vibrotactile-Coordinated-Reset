@@ -35,18 +35,18 @@
             this.ConsoleOutputRichTextBox = new System.Windows.Forms.RichTextBox();
             this.SimulationStartButton = new System.Windows.Forms.Button();
             this.GainTrackBar = new System.Windows.Forms.TrackBar();
-            this.MirrorHands = new System.Windows.Forms.CheckBox();
             this.RandomizGain = new System.Windows.Forms.CheckBox();
             this.GainValueLabel = new System.Windows.Forms.Label();
             this.GainValue = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.vCRDuration = new System.Windows.Forms.TextBox();
-            this.JitterCheckBox = new System.Windows.Forms.CheckBox();
             this.GainMin = new System.Windows.Forms.TextBox();
             this.GainMax = new System.Windows.Forms.TextBox();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.timeLabel = new System.Windows.Forms.Label();
             this.stopButton = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.simProtocols = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.GainTrackBar)).BeginInit();
             this.SuspendLayout();
             // 
@@ -94,11 +94,11 @@
             // 
             // ConsoleOutputRichTextBox
             // 
-            this.ConsoleOutputRichTextBox.Location = new System.Drawing.Point(20, 795);
+            this.ConsoleOutputRichTextBox.Location = new System.Drawing.Point(20, 811);
             this.ConsoleOutputRichTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.ConsoleOutputRichTextBox.Name = "ConsoleOutputRichTextBox";
             this.ConsoleOutputRichTextBox.ReadOnly = true;
-            this.ConsoleOutputRichTextBox.Size = new System.Drawing.Size(386, 96);
+            this.ConsoleOutputRichTextBox.Size = new System.Drawing.Size(386, 126);
             this.ConsoleOutputRichTextBox.TabIndex = 10;
             this.ConsoleOutputRichTextBox.Text = "";
             // 
@@ -116,7 +116,7 @@
             // GainTrackBar
             // 
             this.GainTrackBar.Enabled = false;
-            this.GainTrackBar.Location = new System.Drawing.Point(20, 535);
+            this.GainTrackBar.Location = new System.Drawing.Point(20, 537);
             this.GainTrackBar.Maximum = 255;
             this.GainTrackBar.Minimum = 1;
             this.GainTrackBar.Name = "GainTrackBar";
@@ -125,27 +125,12 @@
             this.GainTrackBar.Value = 150;
             this.GainTrackBar.Scroll += new System.EventHandler(this.GainTrackBar_Scroll);
             // 
-            // MirrorHands
-            // 
-            this.MirrorHands.Appearance = System.Windows.Forms.Appearance.Button;
-            this.MirrorHands.AutoSize = true;
-            this.MirrorHands.Checked = true;
-            this.MirrorHands.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.MirrorHands.Enabled = false;
-            this.MirrorHands.Location = new System.Drawing.Point(20, 466);
-            this.MirrorHands.MaximumSize = new System.Drawing.Size(455, 455);
-            this.MirrorHands.Name = "MirrorHands";
-            this.MirrorHands.Size = new System.Drawing.Size(110, 30);
-            this.MirrorHands.TabIndex = 13;
-            this.MirrorHands.Text = "Mirror Hands";
-            this.MirrorHands.UseVisualStyleBackColor = true;
-            // 
             // RandomizGain
             // 
             this.RandomizGain.Appearance = System.Windows.Forms.Appearance.Button;
             this.RandomizGain.AutoSize = true;
             this.RandomizGain.Enabled = false;
-            this.RandomizGain.Location = new System.Drawing.Point(146, 671);
+            this.RandomizGain.Location = new System.Drawing.Point(146, 673);
             this.RandomizGain.Name = "RandomizGain";
             this.RandomizGain.Size = new System.Drawing.Size(138, 30);
             this.RandomizGain.TabIndex = 14;
@@ -156,7 +141,7 @@
             // GainValueLabel
             // 
             this.GainValueLabel.AutoSize = true;
-            this.GainValueLabel.Location = new System.Drawing.Point(70, 607);
+            this.GainValueLabel.Location = new System.Drawing.Point(70, 609);
             this.GainValueLabel.Name = "GainValueLabel";
             this.GainValueLabel.Size = new System.Drawing.Size(88, 20);
             this.GainValueLabel.TabIndex = 15;
@@ -165,7 +150,7 @@
             // GainValue
             // 
             this.GainValue.Enabled = false;
-            this.GainValue.Location = new System.Drawing.Point(205, 604);
+            this.GainValue.Location = new System.Drawing.Point(205, 606);
             this.GainValue.Name = "GainValue";
             this.GainValue.ReadOnly = true;
             this.GainValue.Size = new System.Drawing.Size(181, 26);
@@ -190,24 +175,10 @@
             this.vCRDuration.TabIndex = 18;
             this.vCRDuration.Text = "1";
             // 
-            // JitterCheckBox
-            // 
-            this.JitterCheckBox.Appearance = System.Windows.Forms.Appearance.Button;
-            this.JitterCheckBox.AutoSize = true;
-            this.JitterCheckBox.Checked = true;
-            this.JitterCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.JitterCheckBox.Enabled = false;
-            this.JitterCheckBox.Location = new System.Drawing.Point(352, 466);
-            this.JitterCheckBox.Name = "JitterCheckBox";
-            this.JitterCheckBox.Size = new System.Drawing.Size(54, 30);
-            this.JitterCheckBox.TabIndex = 19;
-            this.JitterCheckBox.Text = "Jitter";
-            this.JitterCheckBox.UseVisualStyleBackColor = true;
-            // 
             // GainMin
             // 
             this.GainMin.Enabled = false;
-            this.GainMin.Location = new System.Drawing.Point(20, 673);
+            this.GainMin.Location = new System.Drawing.Point(20, 675);
             this.GainMin.Name = "GainMin";
             this.GainMin.Size = new System.Drawing.Size(100, 26);
             this.GainMin.TabIndex = 20;
@@ -216,7 +187,7 @@
             // GainMax
             // 
             this.GainMax.Enabled = false;
-            this.GainMax.Location = new System.Drawing.Point(308, 673);
+            this.GainMax.Location = new System.Drawing.Point(308, 675);
             this.GainMax.Name = "GainMax";
             this.GainMax.Size = new System.Drawing.Size(100, 26);
             this.GainMax.TabIndex = 21;
@@ -225,7 +196,7 @@
             // progressBar
             // 
             this.progressBar.AccessibleName = "progressBar";
-            this.progressBar.Location = new System.Drawing.Point(22, 718);
+            this.progressBar.Location = new System.Drawing.Point(22, 720);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(384, 23);
             this.progressBar.TabIndex = 22;
@@ -234,7 +205,7 @@
             // 
             this.timeLabel.AccessibleName = "timeLabel";
             this.timeLabel.AutoSize = true;
-            this.timeLabel.Location = new System.Drawing.Point(154, 760);
+            this.timeLabel.Location = new System.Drawing.Point(154, 762);
             this.timeLabel.Name = "timeLabel";
             this.timeLabel.Size = new System.Drawing.Size(130, 20);
             this.timeLabel.TabIndex = 23;
@@ -252,23 +223,49 @@
             this.stopButton.UseVisualStyleBackColor = true;
             this.stopButton.Click += new System.EventHandler(this.stopButton_Click);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(18, 470);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(145, 20);
+            this.label2.TabIndex = 25;
+            this.label2.Text = "Simulation Protocol";
+            // 
+            // simProtocols
+            // 
+            this.simProtocols.FormattingEnabled = true;
+            this.simProtocols.Items.AddRange(new object[] {
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F"});
+            this.simProtocols.Location = new System.Drawing.Point(268, 462);
+            this.simProtocols.Name = "simProtocols";
+            this.simProtocols.Size = new System.Drawing.Size(138, 28);
+            this.simProtocols.TabIndex = 26;
+            this.simProtocols.Text = "A";
+            this.simProtocols.SelectedIndexChanged += new System.EventHandler(this.simProtocols_SelectedIndexChanged);
+            // 
             // DiscoverControllerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(423, 896);
+            this.ClientSize = new System.Drawing.Size(423, 955);
+            this.Controls.Add(this.simProtocols);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.stopButton);
             this.Controls.Add(this.timeLabel);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.GainMax);
             this.Controls.Add(this.GainMin);
-            this.Controls.Add(this.JitterCheckBox);
             this.Controls.Add(this.vCRDuration);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.GainValue);
             this.Controls.Add(this.GainValueLabel);
             this.Controls.Add(this.RandomizGain);
-            this.Controls.Add(this.MirrorHands);
             this.Controls.Add(this.GainTrackBar);
             this.Controls.Add(this.SimulationStartButton);
             this.Controls.Add(this.ConsoleOutputRichTextBox);
@@ -294,18 +291,18 @@
         private System.Windows.Forms.RichTextBox ConsoleOutputRichTextBox;
         private System.Windows.Forms.Button SimulationStartButton;
         private System.Windows.Forms.TrackBar GainTrackBar;
-        private System.Windows.Forms.CheckBox MirrorHands;
         private System.Windows.Forms.CheckBox RandomizGain;
         private System.Windows.Forms.Label GainValueLabel;
         private System.Windows.Forms.TextBox GainValue;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox vCRDuration;
-        private System.Windows.Forms.CheckBox JitterCheckBox;
         private System.Windows.Forms.TextBox GainMin;
         private System.Windows.Forms.TextBox GainMax;
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.Label timeLabel;
         private System.Windows.Forms.Button stopButton;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ComboBox simProtocols;
     }
 }
 
