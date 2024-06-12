@@ -164,10 +164,7 @@ namespace DiscoverController
             int Number_of_vCR_Cycles = Total_Simulation_Duration / vCR_Cycle_Duration;
 
             CheckTDKErrors(Tdk.TdkInterface.ChangeGain(ConnectedBoardID, 0, GainTrackBar.Value, 0));
-
-            Random rand = new Random();
-            int leftHandSeed = rand.Next();
-            int rightHandSeed = this.mirroredHands ? leftHandSeed : rand.Next(); //Same seed is used for mirrored hands
+            CheckTDKErrors(Tdk.TdkInterface.ChangeFreq(ConnectedBoardID, 0, vCR_Frequency, 0)); // setting the frequency
 
             cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
@@ -175,8 +172,24 @@ namespace DiscoverController
             progressBar.Maximum = Number_of_vCR_Cycles;
             progressBar.Value = 0;
 
-            Task task = startFingerVibrationSimulation(Number_of_vCR_Cycles, cancellationToken, RandomizGain.Checked);
+            string selectedSimProtocol = simProtocols.SelectedItem.ToString();
+            Task task = null;
+            switch (selectedSimProtocol)
+            {
+                case "A":
+                case "B":
+                case "C":
+                case "D":
+                    task = startFingerVibrationSimulationReal(Number_of_vCR_Cycles, cancellationToken, RandomizGain.Checked);
+                    break;
+                case "E":
+                case "F":
+                    task = startFingerVibrationSimulationSHAM(Number_of_vCR_Cycles, cancellationToken);
+                    break;
+            }
             await Task.WhenAll(task);
+
+
 
             enableAllInputs();
             ToggleGainInputs();
@@ -202,11 +215,49 @@ namespace DiscoverController
             GainMin.Enabled = false;
         }
 
-        private async Task startFingerVibrationSimulation(int Number_of_vCR_Cycles, CancellationToken cancellationToken, bool randomizedGain = false)
+        private async Task startFingerVibrationSimulationSHAM(int Number_of_vCR_Cycles, CancellationToken cancellationToken)
         {
             System.Windows.Forms.Timer timer = getTimer();
+            Random randVCRBurstStart = new Random();
+            int vCR_Burst_Start = randVCRBurstStart.Next(0, vCR_Cycle_Duration - vCR_Duration);
 
-            CheckTDKErrors(Tdk.TdkInterface.ChangeFreq(ConnectedBoardID, 0, vCR_Frequency, 0)); // setting the frequency
+            timer.Start();
+            for (int vCR_Cycle = 0; vCR_Cycle < Number_of_vCR_Cycles; vCR_Cycle++)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                if (vCR_Cycle % 5 < 3)
+                {
+                    await Task.Delay(vCR_Burst_Start);
+                    Parallel.Invoke(
+                        () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, 1, vCR_Duration, 0)),
+                        () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, 2, vCR_Duration, 0)),
+                        () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, 3, vCR_Duration, 0)),
+                        () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, 4, vCR_Duration, 0)),
+                        () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, 5, vCR_Duration, 0)),
+                        () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, 6, vCR_Duration, 0)),
+                        () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, 7, vCR_Duration, 0)),
+                        () => CheckTDKErrors(Tdk.TdkInterface.Pulse(ConnectedBoardID, 8, vCR_Duration, 0))
+                   );
+                    await Task.Delay(vCR_Cycle_Duration - vCR_Burst_Start);
+                }
+                if (vCR_Cycle % 5 >= 3)
+                {
+                    await Task.Delay(vCR_Cycle_Duration);
+                }
+                if (simProtocols.SelectedItem.ToString() == "F")
+                {
+                    vCR_Burst_Start = randVCRBurstStart.Next(0, vCR_Cycle_Duration - vCR_Duration);
+                }
+                progressBar.Value = vCR_Cycle + 1;
+            }
+            timer.Stop();
+        }
+        private async Task startFingerVibrationSimulationReal(int Number_of_vCR_Cycles, CancellationToken cancellationToken, bool randomizedGain = false)
+        {
+            System.Windows.Forms.Timer timer = getTimer();
 
             Random randHands = new Random();
             int leftHandSeed = randHands.Next();
@@ -230,7 +281,7 @@ namespace DiscoverController
 
                 if (vCR_Cycle % 5 < 3)
                 {
-                    int []fingersLeftThisCycle = fingersLeft.OrderBy(x => randLeft.Next()).ToArray(); //shuffling the order of the fingers to stimulate
+                    int[] fingersLeftThisCycle = fingersLeft.OrderBy(x => randLeft.Next()).ToArray(); //shuffling the order of the fingers to stimulate
                     int[] fingersRightThisCycle = fingersRight.OrderBy(x => randRight.Next()).ToArray(); //shuffling the order of the fingers to stimulate
 
                     for (int finger_idx = 0; finger_idx < num_fingers; finger_idx++)
@@ -336,7 +387,7 @@ namespace DiscoverController
                 case "D":
                     mirroredHands = false;
                     jitterOn = false;
-                break;
+                    break;
             }
         }
     }
